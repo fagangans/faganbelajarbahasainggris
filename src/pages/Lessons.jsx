@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAllUnits } from '../data/index';
 import { SECTION_DEFS, getSectionProgress } from '../utils/progress';
 import useGameStore from '../store/useGameStore';
+import BackButton from '../components/BackButton';
 
 export default function Lessons() {
   const navigate = useNavigate();
@@ -13,8 +14,9 @@ export default function Lessons() {
     <div className={`min-h-screen pb-24 ${darkMode ? 'dark' : ''}`}>
       <div className="bg-gray-50 dark:bg-gray-950 min-h-screen">
         <div className="max-w-lg mx-auto">
-          <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-4">
-            <h1 className="text-xl font-extrabold text-gray-800 dark:text-white">📚 All Lessons</h1>
+          <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+            <BackButton />
+            <h1 className="text-xl font-extrabold text-gray-800 dark:text-white mt-1">📚 All Lessons</h1>
             <p className="text-sm text-gray-400">{completedUnits.length}/145 units completed</p>
           </div>
 

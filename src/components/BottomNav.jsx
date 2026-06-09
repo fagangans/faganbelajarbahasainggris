@@ -2,21 +2,22 @@ import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const navItems = [
-  { to: '/', icon: '🏠', label: 'Home' },
-  { to: '/lessons', icon: '📚', label: 'Lessons' },
-  { to: '/leaderboard', icon: '🏆', label: 'Leaders' },
-  { to: '/profile', icon: '👤', label: 'Profile' },
+  { to: '/', icon: '🏠', label: 'Home', withState: false },
+  { to: '/lessons', icon: '📚', label: 'Lessons', withState: true },
+  { to: '/leaderboard', icon: '🏆', label: 'Leaders', withState: true },
+  { to: '/profile', icon: '👤', label: 'Profile', withState: true },
 ];
 
 export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 safe-area-inset-bottom">
       <div className="flex items-center justify-around max-w-lg mx-auto h-16">
-        {navItems.map(({ to, icon, label }) => (
+        {navItems.map(({ to, icon, label, withState }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
+            state={withState ? { from: '/' } : undefined}
             className={({ isActive }) =>
               `flex flex-col items-center gap-0.5 py-2 px-4 rounded-xl transition-all ${
                 isActive

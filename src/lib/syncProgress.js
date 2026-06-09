@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { upsertLeaderboardEntry } from './leaderboard';
 
 function storeToRow(state, userId) {
   return {
@@ -59,7 +60,19 @@ export async function saveCloudProgress(state, userId) {
     .from('user_progress')
     .upsert(row, { onConflict: 'user_id' });
 
-  if (error) console.error('Cloud sync error:', error);
+  if (error) {
+    console.error('Cloud sync error:', error);
+    return;
+  }
+
+  // Update public leaderboard — failure must never break progress sync
+  upsertLeaderboardEntry({
+    userId,
+    username: state.username,
+    avatar: state.avatar,
+    xp: state.xp,
+    streak: state.streak,
+  }).catch((e) => console.warn('Leaderboard sync warning:', e));
 }
 
 // Merge strategy: cloud wins if it has more XP (more recent progress)

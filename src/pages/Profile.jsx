@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import useGameStore from '../store/useGameStore';
 import { ACHIEVEMENTS, SECTION_DEFS } from '../utils/progress';
 import { useAuth } from '../hooks/useAuth';
+import BackButton from '../components/BackButton';
 
 const AVATARS = ['🦉', '🐯', '🦁', '🐻', '🐼', '🦊', '🐺', '🦝', '🐸', '🐧', '🦄', '🐉'];
 
@@ -42,7 +43,8 @@ export default function Profile() {
   return (
     <div className={`min-h-screen pb-24 ${darkMode ? 'dark' : ''}`}>
       <div className="bg-gray-50 dark:bg-gray-950 min-h-screen">
-        <div className="max-w-lg mx-auto px-4 pt-6 space-y-5">
+        <div className="max-w-lg mx-auto px-4 pt-4 space-y-5">
+          <BackButton />
           {/* Header card */}
           <motion.div
             className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-3xl p-6 text-white shadow-xl"

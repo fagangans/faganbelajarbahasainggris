@@ -12,6 +12,7 @@ import BottomNav from './components/BottomNav';
 import useGameStore from './store/useGameStore';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { loadCloudProgress, mergeProgress } from './lib/syncProgress';
+import { upsertLeaderboardEntry } from './lib/leaderboard';
 
 function AppContent() {
   const location = useLocation();
@@ -51,6 +52,16 @@ function AppContent() {
       }
       // Re-set userId since hydrate may have cleared it
       setUserId(user.id);
+
+      // Backfill leaderboard with current public stats (non-blocking)
+      const s = useGameStore.getState();
+      upsertLeaderboardEntry({
+        userId: user.id,
+        username: s.username,
+        avatar: s.avatar,
+        xp: s.xp,
+        streak: s.streak,
+      }).catch((e) => console.warn('Leaderboard backfill warning:', e));
     });
   }, [user]);
 
