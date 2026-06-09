@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ExerciseCard from '../components/ExerciseCard';
 import Confetti from '../components/Confetti';
+import HeartRecoveryModal from '../components/HeartRecoveryModal';
 import { getAllUnits } from '../data/index';
 import useGameStore from '../store/useGameStore';
 import { getStarCount, getMotivationalMessage } from '../utils/progress';
@@ -42,6 +43,7 @@ export default function Exercise() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [result, setResult] = useState(null);
   const [timeLeft, setTimeLeft] = useState(mode === 'challenge' ? 30 : null);
+  const [recoveryModalOpen, setRecoveryModalOpen] = useState(false);
   const { loseHeart, hearts, maxHearts, gainHeart, spendGems, refillAllHearts, completeUnit, updateStreak, addXP, addGems, gems } = useGameStore();
 
   const timerRef = useRef(null);
@@ -69,7 +71,7 @@ export default function Exercise() {
   }
 
   useEffect(() => {
-    if (mode === 'challenge' && !done) {
+    if (mode === 'challenge' && !done && !recoveryModalOpen) {
       timerRef.current = setInterval(() => {
         setTimeLeft(t => {
           if (t <= 1) {
@@ -82,7 +84,7 @@ export default function Exercise() {
       }, 1000);
     }
     return () => clearInterval(timerRef.current);
-  }, [qIndex, done, mode]);
+  }, [qIndex, done, mode, recoveryModalOpen]);
 
   function handleTimeOut() {
     setWrong(w => w + 1);
@@ -164,6 +166,15 @@ export default function Exercise() {
             <span className="text-lg font-extrabold text-blue-600 dark:text-blue-400">{gems} gems</span>
           </div>
 
+          {/* Review Practice — free heart */}
+          <button
+            onClick={() => setRecoveryModalOpen(true)}
+            className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-between px-5 bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:opacity-90 transition-opacity"
+          >
+            <span>📝 Practice 3 Questions</span>
+            <span className="text-sm font-extrabold text-white/80">Earn 1 ❤️ free</span>
+          </button>
+
           {/* Buy 1 Heart */}
           <button
             onClick={handleBuyHeart}
@@ -204,6 +215,14 @@ export default function Exercise() {
             Go Home
           </button>
         </div>
+
+        {recoveryModalOpen && (
+          <HeartRecoveryModal
+            onClose={() => {
+              setRecoveryModalOpen(false);
+            }}
+          />
+        )}
       </div>
     );
   }
