@@ -1,5 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { saveCloudProgress } from '../lib/syncProgress';
+
+let syncTimer = null;
+function scheduleSyncCloud(state, userId) {
+  if (!userId) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => saveCloudProgress(state, userId), 2000);
+}
 
 const LEVEL_THRESHOLDS = [0, 100, 250, 500, 900, 1400, 2100, 3000, 4200, 5800, 8000];
 
@@ -63,6 +71,9 @@ const useGameStore = create(
       // Dark mode
       darkMode: false,
 
+      // Cloud sync
+      _userId: null,
+
       // Derived
       getLevel: () => getLevel(get().xp),
       getXpForNextLevel: () => getXpForNextLevel(get().xp),
@@ -75,6 +86,10 @@ const useGameStore = create(
       },
 
       // Actions
+      setUserId: (userId) => set({ _userId: userId }),
+
+      hydrate: (data) => set(data),
+
       init: () => {
         const state = get();
         const heartReset = checkHeartReset(state);
@@ -84,18 +99,18 @@ const useGameStore = create(
         }
       },
 
-      setUsername: (name) => set({ username: name }),
-      setAvatar: (emoji) => set({ avatar: emoji }),
-      toggleDarkMode: () => set((s) => ({ darkMode: !s.darkMode })),
+      setUsername: (name) => { set({ username: name }); scheduleSyncCloud(get(), get()._userId); },
+      setAvatar: (emoji) => { set({ avatar: emoji }); scheduleSyncCloud(get(), get()._userId); },
+      toggleDarkMode: () => { set((s) => ({ darkMode: !s.darkMode })); scheduleSyncCloud(get(), get()._userId); },
 
       loseHeart: () => {
         const { hearts } = get();
-        if (hearts > 0) set({ hearts: hearts - 1 });
+        if (hearts > 0) { set({ hearts: hearts - 1 }); scheduleSyncCloud(get(), get()._userId); }
       },
 
       gainHeart: () => {
         const { hearts, maxHearts } = get();
-        if (hearts < maxHearts) set({ hearts: hearts + 1 });
+        if (hearts < maxHearts) { set({ hearts: hearts + 1 }); scheduleSyncCloud(get(), get()._userId); }
       },
 
       addXP: (amount) => {
@@ -104,15 +119,17 @@ const useGameStore = create(
         const newXP = prevXP + amount;
         const newLevel = getLevel(newXP);
         set({ xp: newXP });
+        scheduleSyncCloud(get(), get()._userId);
         return newLevel > prevLevel ? newLevel : null;
       },
 
-      addGems: (amount) => set((s) => ({ gems: s.gems + amount })),
+      addGems: (amount) => { set((s) => ({ gems: s.gems + amount })); scheduleSyncCloud(get(), get()._userId); },
 
       spendGem: () => {
         const { gems } = get();
         if (gems >= 1) {
           set({ gems: gems - 1 });
+          scheduleSyncCloud(get(), get()._userId);
           return true;
         }
         return false;
@@ -122,6 +139,7 @@ const useGameStore = create(
         const { gems } = get();
         if (gems >= amount) {
           set({ gems: gems - amount });
+          scheduleSyncCloud(get(), get()._userId);
           return true;
         }
         return false;
@@ -130,6 +148,7 @@ const useGameStore = create(
       refillAllHearts: () => {
         const { maxHearts } = get();
         set({ hearts: maxHearts });
+        scheduleSyncCloud(get(), get()._userId);
       },
 
       updateStreak: () => {
@@ -146,6 +165,7 @@ const useGameStore = create(
         } else {
           set({ streak: 1, lastActiveDate: today });
         }
+        scheduleSyncCloud(get(), get()._userId);
       },
 
       completeUnit: (unitId, score, totalQuestions) => {
@@ -191,6 +211,7 @@ const useGameStore = create(
           gems: gems + gemsEarned,
           currentUnitId: nextId,
         });
+        scheduleSyncCloud(get(), get()._userId);
 
         return { stars: newStars, xpEarned, gemsEarned };
       },
@@ -200,25 +221,34 @@ const useGameStore = create(
         const newAch = [...achievements];
         if (streak >= 7 && !newAch.includes('streak_7')) newAch.push('streak_7');
         if (streak >= 30 && !newAch.includes('streak_30')) newAch.push('streak_30');
-        if (newAch.length !== achievements.length) set({ achievements: newAch });
+        if (newAch.length !== achievements.length) { set({ achievements: newAch }); scheduleSyncCloud(get(), get()._userId); }
       },
 
-      resetProgress: () => set({
-        unlockedUnits: [1],
-        completedUnits: [],
-        unitStars: {},
-        currentUnitId: 1,
-        hearts: 5,
-        xp: 0,
-        gems: 0,
-        streak: 0,
-        lastActiveDate: '',
-        achievements: [],
-      }),
+      resetProgress: () => {
+        const reset = {
+          unlockedUnits: [1],
+          completedUnits: [],
+          unitStars: {},
+          currentUnitId: 1,
+          hearts: 5,
+          xp: 0,
+          gems: 0,
+          streak: 0,
+          lastActiveDate: '',
+          achievements: [],
+        };
+        set(reset);
+        scheduleSyncCloud(get(), get()._userId);
+      },
     }),
     {
       name: 'grammarquest-store',
       version: 1,
+      partialize: (state) => {
+        // eslint-disable-next-line no-unused-vars
+        const { _userId, ...rest } = state;
+        return rest;
+      },
     }
   )
 );

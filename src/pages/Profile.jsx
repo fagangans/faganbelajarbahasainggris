@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import useGameStore from '../store/useGameStore';
 import { ACHIEVEMENTS, SECTION_DEFS } from '../utils/progress';
+import { useAuth } from '../hooks/useAuth';
 
 const AVATARS = ['🦉', '🐯', '🦁', '🐻', '🐼', '🦊', '🐺', '🦝', '🐸', '🐧', '🦄', '🐉'];
 
@@ -22,9 +23,11 @@ function AchievementBadge({ id, earned }) {
 
 export default function Profile() {
   const { username, avatar, xp, gems, streak, completedUnits, achievements, darkMode, setUsername, setAvatar, toggleDarkMode, resetProgress, getLevel, getLevelProgress } = useGameStore();
+  const { user, signOut } = useAuth();
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState(username);
   const [showReset, setShowReset] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   const level = getLevel();
   const levelPct = getLevelProgress();
@@ -167,6 +170,19 @@ export default function Profile() {
               <span className="font-semibold text-gray-600 dark:text-gray-300">Gems</span>
               <span className="font-bold text-blue-500">{gems} 💎</span>
             </div>
+            {user && (
+              <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-gray-700">
+                <span className="font-semibold text-gray-600 dark:text-gray-300 text-sm">{user.email}</span>
+                {showLogout ? (
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowLogout(false)} className="text-xs px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-500">Batal</button>
+                    <button onClick={signOut} className="text-xs px-3 py-1 rounded-lg bg-red-500 text-white font-bold">Logout</button>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowLogout(true)} className="text-sm text-red-400 font-semibold hover:text-red-500">Logout</button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Danger zone */}
