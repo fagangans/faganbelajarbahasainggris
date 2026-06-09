@@ -9,6 +9,24 @@ function scheduleSyncCloud(state, userId) {
   syncTimer = setTimeout(() => saveCloudProgress(state, userId), 2000);
 }
 
+const DEFAULT_GAME_STATE = {
+  username: 'Learner',
+  avatar: '🦉',
+  unlockedUnits: [1],
+  completedUnits: [],
+  unitStars: {},
+  currentUnitId: 1,
+  hearts: 5,
+  maxHearts: 5,
+  lastHeartReset: '',
+  xp: 0,
+  gems: 0,
+  streak: 0,
+  lastActiveDate: '',
+  achievements: [],
+  darkMode: false,
+};
+
 const LEVEL_THRESHOLDS = [0, 100, 250, 500, 900, 1400, 2100, 3000, 4200, 5800, 8000];
 
 function getLevel(xp) {
@@ -89,6 +107,13 @@ const useGameStore = create(
       setUserId: (userId) => set({ _userId: userId }),
 
       hydrate: (data) => set(data),
+
+      // Wipe local game state on logout — does NOT touch Supabase or sync anything
+      clearLocalSession: () => {
+        clearTimeout(syncTimer);
+        syncTimer = null;
+        set({ ...DEFAULT_GAME_STATE, _userId: null });
+      },
 
       init: () => {
         const state = get();

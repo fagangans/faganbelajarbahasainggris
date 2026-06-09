@@ -15,9 +15,9 @@ import { loadCloudProgress, mergeProgress } from './lib/syncProgress';
 
 function AppContent() {
   const location = useLocation();
-  const { darkMode, init, hydrate, setUserId } = useGameStore();
+  const { darkMode, init, hydrate, setUserId, clearLocalSession } = useGameStore();
   const { user, loading } = useAuth();
-  const syncedRef = useRef(false);
+  const prevUserIdRef = useRef(null);
 
   useEffect(() => {
     init();
@@ -25,17 +25,24 @@ function AppContent() {
 
   useEffect(() => {
     if (!user) {
-      syncedRef.current = false;
-      setUserId(null);
+      // User logged out — wipe local state so next user starts clean
+      if (prevUserIdRef.current !== null) {
+        clearLocalSession();
+      }
+      prevUserIdRef.current = null;
       return;
     }
 
-    if (syncedRef.current) return;
-    syncedRef.current = true;
+    const isNewUser = prevUserIdRef.current !== user.id;
+    prevUserIdRef.current = user.id;
 
+    if (!isNewUser) return;
+
+    // New user logged in — clear any leftover state from previous user first
+    clearLocalSession();
     setUserId(user.id);
 
-    // Load cloud state and merge with local
+    // Load cloud state and merge with clean local defaults
     loadCloudProgress(user.id).then((cloud) => {
       const local = useGameStore.getState();
       const merged = mergeProgress(local, cloud);
