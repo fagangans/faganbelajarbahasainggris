@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 const navItems = [
   { to: '/', icon: '🏠', label: 'Home', withState: false },
   { to: '/lessons', icon: '📚', label: 'Lessons', withState: true },
+  { to: '/shop', icon: '🛍️', label: 'Shop', withState: true },
   { to: '/leaderboard', icon: '🏆', label: 'Leaders', withState: true },
   { to: '/profile', icon: '👤', label: 'Profile', withState: true },
 ];
@@ -19,7 +20,7 @@ export default function BottomNav() {
             end={to === '/'}
             state={withState ? { from: '/' } : undefined}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 py-2 px-4 rounded-xl transition-all ${
+              `flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl transition-all ${
                 isActive
                   ? 'text-green-500 dark:text-green-400'
                   : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'

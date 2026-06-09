@@ -2,6 +2,9 @@ import { supabase } from './supabase';
 import { upsertLeaderboardEntry } from './leaderboard';
 
 function storeToRow(state, userId) {
+  const ownedAvatars = Array.isArray(state.ownedAvatars) && state.ownedAvatars.length > 0
+    ? state.ownedAvatars
+    : ['owl'];
   return {
     user_id: userId,
     username: state.username,
@@ -19,11 +22,17 @@ function storeToRow(state, userId) {
     streak: state.streak,
     last_active_date: state.lastActiveDate,
     achievements: state.achievements,
+    owned_avatars: ownedAvatars,
+    equipped_avatar: state.equippedAvatar || 'owl',
     updated_at: new Date().toISOString(),
   };
 }
 
 function rowToStore(row) {
+  const ownedAvatars = Array.isArray(row.owned_avatars) && row.owned_avatars.length > 0
+    ? row.owned_avatars
+    : ['owl'];
+  const equippedAvatar = ownedAvatars.includes(row.equipped_avatar) ? row.equipped_avatar : 'owl';
   return {
     username: row.username,
     avatar: row.avatar,
@@ -40,6 +49,8 @@ function rowToStore(row) {
     streak: row.streak,
     lastActiveDate: row.last_active_date,
     achievements: row.achievements,
+    ownedAvatars,
+    equippedAvatar,
   };
 }
 
@@ -75,9 +86,14 @@ export async function saveCloudProgress(state, userId) {
   }).catch((e) => console.warn('Leaderboard sync warning:', e));
 }
 
-// Merge strategy: cloud wins if it has more XP (more recent progress)
+// Merge strategy: cloud wins on XP; ownedAvatars is always a union of both
 export function mergeProgress(local, cloud) {
   if (!cloud) return local;
   if (!local) return cloud;
-  return cloud.xp >= local.xp ? cloud : local;
+  const base = cloud.xp >= local.xp ? cloud : local;
+  const localOwned = Array.isArray(local.ownedAvatars) ? local.ownedAvatars : ['owl'];
+  const cloudOwned = Array.isArray(cloud.ownedAvatars) ? cloud.ownedAvatars : ['owl'];
+  const ownedAvatars = [...new Set([...localOwned, ...cloudOwned])];
+  const equippedAvatar = ownedAvatars.includes(base.equippedAvatar) ? base.equippedAvatar : 'owl';
+  return { ...base, ownedAvatars, equippedAvatar };
 }

@@ -60,3 +60,101 @@ body {
   0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
   100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
 }
+
+/* ── XP Prestige Background Themes ───────────────────────────── */
+@keyframes xp-shimmer {
+  0%   { opacity: 0.35; transform: translateX(-100%) skewX(-15deg); }
+  100% { opacity: 0;    transform: translateX(200%) skewX(-15deg); }
+}
+@keyframes xp-orb-float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.18; }
+  50%       { transform: translateY(-20px) scale(1.08); opacity: 0.28; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .xp-shimmer, .xp-orb { animation: none !important; }
+}
+
+/* Base layer shared by all themes */
+.xp-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.xp-bg::before,
+.xp-bg::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  animation: xp-orb-float 7s ease-in-out infinite;
+}
+.xp-bg::before { width: 55vw; height: 55vw; top: -15vw; left: -15vw; animation-delay: 0s; }
+.xp-bg::after  { width: 45vw; height: 45vw; bottom: -10vw; right: -10vw; animation-delay: 3.5s; }
+
+/* Shimmer sweep child element */
+.xp-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%);
+  animation: xp-shimmer 6s linear infinite;
+}
+
+/* ── Tier 1: Midnight Academy (0–500 XP) */
+.xp-theme-midnight .xp-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 10%, rgba(30,41,59,0.9) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 90% 90%, rgba(15,23,42,0.95) 0%, transparent 70%),
+    linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0c1426 100%);
+}
+.xp-theme-midnight .xp-bg::before { background: radial-gradient(circle, rgba(56,189,248,0.25) 0%, transparent 70%); }
+.xp-theme-midnight .xp-bg::after  { background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%); }
+
+/* ── Tier 2: Emerald Forest (501–1500 XP) */
+.xp-theme-emerald .xp-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 10%, rgba(6,78,59,0.9) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 85% 90%, rgba(2,44,34,0.95) 0%, transparent 70%),
+    linear-gradient(160deg, #022c22 0%, #064e3b 50%, #052e16 100%);
+}
+.xp-theme-emerald .xp-bg::before { background: radial-gradient(circle, rgba(52,211,153,0.28) 0%, transparent 70%); }
+.xp-theme-emerald .xp-bg::after  { background: radial-gradient(circle, rgba(163,230,53,0.2) 0%, transparent 70%); }
+
+/* ── Tier 3: Abyss Ocean (1501–3000 XP) */
+.xp-theme-abyss .xp-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 15%, rgba(23,37,84,0.9) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 90% 85%, rgba(7,89,133,0.8) 0%, transparent 70%),
+    linear-gradient(160deg, #0c1445 0%, #1e3a5f 50%, #0a2540 100%);
+}
+.xp-theme-abyss .xp-bg::before { background: radial-gradient(circle, rgba(14,165,233,0.3) 0%, transparent 70%); }
+.xp-theme-abyss .xp-bg::after  { background: radial-gradient(circle, rgba(6,182,212,0.22) 0%, transparent 70%); }
+
+/* ── Tier 4: Royal Galaxy (3001–6000 XP) */
+.xp-theme-galaxy .xp-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 10%, rgba(59,7,100,0.9) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 90% 90%, rgba(76,29,149,0.9) 0%, transparent 70%),
+    linear-gradient(160deg, #1e0a3c 0%, #3b0764 50%, #2e1065 100%);
+}
+.xp-theme-galaxy .xp-bg::before { background: radial-gradient(circle, rgba(192,132,252,0.3) 0%, transparent 70%); }
+.xp-theme-galaxy .xp-bg::after  { background: radial-gradient(circle, rgba(250,204,21,0.22) 0%, transparent 70%); }
+
+/* ── Tier 5: Celestial Gold (6001+ XP) */
+.xp-theme-celestial .xp-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 10%, rgba(120,53,15,0.85) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 90% 90%, rgba(92,33,0,0.9) 0%, transparent 70%),
+    linear-gradient(160deg, #0a0a0a 0%, #1c0e00 40%, #0f0500 100%);
+}
+.xp-theme-celestial .xp-bg::before { background: radial-gradient(circle, rgba(251,191,36,0.35) 0%, transparent 70%); }
+.xp-theme-celestial .xp-bg::after  { background: radial-gradient(circle, rgba(245,158,11,0.28) 0%, transparent 70%); }
+.xp-theme-celestial .xp-shimmer {
+  background: linear-gradient(105deg, transparent 40%, rgba(251,191,36,0.08) 50%, transparent 60%);
+}
+
+/* Ensure page content sits above the background */
+.xp-content-layer {
+  position: relative;
+  z-index: 1;
+}

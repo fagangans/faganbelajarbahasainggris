@@ -8,15 +8,17 @@ import Profile from './pages/Profile';
 import Leaderboard from './pages/Leaderboard';
 import Lessons from './pages/Lessons';
 import Auth from './pages/Auth';
+import Shop from './pages/Shop';
 import BottomNav from './components/BottomNav';
 import useGameStore from './store/useGameStore';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { loadCloudProgress, mergeProgress } from './lib/syncProgress';
 import { upsertLeaderboardEntry } from './lib/leaderboard';
+import { getXpTheme } from './lib/xpTheme';
 
 function AppContent() {
   const location = useLocation();
-  const { darkMode, init, hydrate, setUserId, clearLocalSession } = useGameStore();
+  const { darkMode, xp, init, hydrate, setUserId, clearLocalSession } = useGameStore();
   const { user, loading } = useAuth();
   const prevUserIdRef = useRef(null);
 
@@ -78,10 +80,15 @@ function AppContent() {
   }
 
   const hideNav = location.pathname.startsWith('/exercise') || location.pathname.startsWith('/lesson');
+  const xpTheme = getXpTheme(xp);
 
   return (
-    <div className={darkMode ? 'dark' : ''}>
-      <div className="bg-gray-50 dark:bg-gray-950 min-h-screen">
+    <div className={`${darkMode ? 'dark' : ''} ${xpTheme.className}`}>
+      {/* Prestige background layer */}
+      <div className="xp-bg" aria-hidden="true">
+        <div className="xp-shimmer" />
+      </div>
+      <div className="xp-content-layer bg-gray-50/80 dark:bg-gray-950/85 min-h-screen">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<Home />} />
@@ -90,6 +97,7 @@ function AppContent() {
             <Route path="/exercise/:id/:mode" element={<Exercise />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/shop" element={<Shop />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AnimatePresence>

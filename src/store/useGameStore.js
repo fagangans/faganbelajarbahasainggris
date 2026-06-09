@@ -12,6 +12,8 @@ function scheduleSyncCloud(state, userId) {
 const DEFAULT_GAME_STATE = {
   username: 'Learner',
   avatar: '🦉',
+  ownedAvatars: ['owl'],
+  equippedAvatar: 'owl',
   unlockedUnits: [1],
   completedUnits: [],
   unitStars: {},
@@ -26,6 +28,14 @@ const DEFAULT_GAME_STATE = {
   achievements: [],
   darkMode: false,
 };
+
+export const AVATAR_CATALOG = [
+  { id: 'owl',     emoji: '🦉', label: 'Owl',     cost: 0 },
+  { id: 'fox',     emoji: '🦊', label: 'Fox',     cost: 100 },
+  { id: 'cat',     emoji: '🐱', label: 'Cat',     cost: 100 },
+  { id: 'dragon',  emoji: '🐲', label: 'Dragon',  cost: 250 },
+  { id: 'phoenix', emoji: '🦅', label: 'Phoenix', cost: 400 },
+];
 
 const LEVEL_THRESHOLDS = [0, 100, 250, 500, 900, 1400, 2100, 3000, 4200, 5800, 8000];
 
@@ -53,7 +63,6 @@ function checkHeartReset(state) {
 
 function checkStreakReset(state) {
   if (!state.lastActiveDate) return {};
-  const today = new Date().toDateString();
   const last = new Date(state.lastActiveDate);
   const now = new Date();
   const diffDays = Math.floor((now - last) / (1000 * 60 * 60 * 24));
@@ -69,6 +78,8 @@ const useGameStore = create(
       // User info
       username: 'Learner',
       avatar: '🦉',
+      ownedAvatars: ['owl'],
+      equippedAvatar: 'owl',
 
       // Progress
       unlockedUnits: [1],
@@ -247,6 +258,45 @@ const useGameStore = create(
         if (streak >= 7 && !newAch.includes('streak_7')) newAch.push('streak_7');
         if (streak >= 30 && !newAch.includes('streak_30')) newAch.push('streak_30');
         if (newAch.length !== achievements.length) { set({ achievements: newAch }); scheduleSyncCloud(get(), get()._userId); }
+      },
+
+      buyHeart: () => {
+        const { gems, hearts, maxHearts } = get();
+        if (hearts >= maxHearts) return { ok: false, message: 'Hearts already full!' };
+        if (gems < 20) return { ok: false, message: 'Not enough gems (need 20 💎)' };
+        set({ gems: gems - 20, hearts: hearts + 1 });
+        scheduleSyncCloud(get(), get()._userId);
+        return { ok: true, message: '+1 ❤️ added!' };
+      },
+
+      refillHeartsWithGems: () => {
+        const { gems, hearts, maxHearts } = get();
+        if (hearts >= maxHearts) return { ok: false, message: 'Hearts already full!' };
+        if (gems < 80) return { ok: false, message: 'Not enough gems (need 80 💎)' };
+        set({ gems: gems - 80, hearts: maxHearts });
+        scheduleSyncCloud(get(), get()._userId);
+        return { ok: true, message: 'Hearts fully refilled! ❤️' };
+      },
+
+      buyAvatar: (avatarId) => {
+        const { gems, ownedAvatars } = get();
+        const entry = AVATAR_CATALOG.find((a) => a.id === avatarId);
+        if (!entry) return { ok: false, message: 'Unknown avatar.' };
+        if (ownedAvatars.includes(avatarId)) return { ok: false, message: 'Already owned!' };
+        if (gems < entry.cost) return { ok: false, message: `Not enough gems (need ${entry.cost} 💎)` };
+        set({ gems: gems - entry.cost, ownedAvatars: [...ownedAvatars, avatarId] });
+        scheduleSyncCloud(get(), get()._userId);
+        return { ok: true, message: `${entry.label} ${entry.emoji} unlocked!` };
+      },
+
+      equipAvatar: (avatarId) => {
+        const { ownedAvatars } = get();
+        const entry = AVATAR_CATALOG.find((a) => a.id === avatarId);
+        if (!entry) return { ok: false, message: 'Unknown avatar.' };
+        if (!ownedAvatars.includes(avatarId)) return { ok: false, message: 'You do not own this avatar.' };
+        set({ equippedAvatar: avatarId, avatar: entry.emoji });
+        scheduleSyncCloud(get(), get()._userId);
+        return { ok: true, message: `${entry.label} ${entry.emoji} equipped!` };
       },
 
       resetProgress: () => {
