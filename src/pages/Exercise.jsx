@@ -42,9 +42,31 @@ export default function Exercise() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [result, setResult] = useState(null);
   const [timeLeft, setTimeLeft] = useState(mode === 'challenge' ? 30 : null);
-  const timerRef = useRef(null);
+  const { loseHeart, hearts, maxHearts, gainHeart, spendGems, refillAllHearts, completeUnit, updateStreak, addXP, addGems, gems } = useGameStore();
 
-  const { loseHeart, hearts, completeUnit, updateStreak, addXP, addGems, gems } = useGameStore();
+  const timerRef = useRef(null);
+  const purchasingRef = useRef(false);
+
+  const HEART_COST = 20;
+  const REFILL_COST = 80;
+
+  function handleBuyHeart() {
+    if (purchasingRef.current) return;
+    if (gems < HEART_COST || hearts >= maxHearts) return;
+    purchasingRef.current = true;
+    const ok = spendGems(HEART_COST);
+    if (ok) gainHeart();
+    purchasingRef.current = false;
+  }
+
+  function handleRefillHearts() {
+    if (purchasingRef.current) return;
+    if (gems < REFILL_COST || hearts >= maxHearts) return;
+    purchasingRef.current = true;
+    const ok = spendGems(REFILL_COST);
+    if (ok) refillAllHearts();
+    purchasingRef.current = false;
+  }
 
   useEffect(() => {
     if (mode === 'challenge' && !done) {
@@ -123,20 +145,64 @@ export default function Exercise() {
   const progress = ((qIndex) / questions.length) * 100;
 
   if (hearts <= 0 && !done) {
+    const canBuyOne = gems >= HEART_COST && hearts < maxHearts;
+    const canRefill = gems >= REFILL_COST && hearts < maxHearts;
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">
-        <div className="text-center space-y-5">
-          <div className="text-6xl">💔</div>
-          <h2 className="text-2xl font-extrabold text-gray-800 dark:text-white">Out of Hearts!</h2>
-          <p className="text-gray-500">Come back tomorrow for more hearts.</p>
-          <div className="flex gap-3">
-            <button onClick={() => navigate('/')} className="flex-1 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300">
-              Go Home
-            </button>
-            <button onClick={() => { setDone(false); setQIndex(0); setCorrect(0); setWrong(0); setMistakes([]); }} className="flex-1 py-3 rounded-2xl bg-green-500 text-white font-bold">
-              Try Again
-            </button>
+        <div className="w-full max-w-sm space-y-4">
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <div className="text-6xl">💔</div>
+            <h2 className="text-2xl font-extrabold text-gray-800 dark:text-white">Out of Hearts!</h2>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">Come back tomorrow or use gems to continue.</p>
           </div>
+
+          {/* Gem balance */}
+          <div className="flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 rounded-2xl py-3 px-4">
+            <span className="text-xl">💎</span>
+            <span className="text-lg font-extrabold text-blue-600 dark:text-blue-400">{gems} gems</span>
+          </div>
+
+          {/* Buy 1 Heart */}
+          <button
+            onClick={handleBuyHeart}
+            disabled={!canBuyOne}
+            className={`w-full py-4 rounded-2xl font-bold text-base flex items-center justify-between px-5 transition-opacity
+              ${canBuyOne
+                ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white hover:opacity-90'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}
+          >
+            <span>❤️ Buy 1 Heart</span>
+            <span className={`text-sm font-extrabold ${canBuyOne ? 'text-white/80' : 'text-gray-400'}`}>
+              {HEART_COST} 💎
+              {gems < HEART_COST && <span className="ml-1 text-xs">(need {HEART_COST - gems} more)</span>}
+            </span>
+          </button>
+
+          {/* Refill All */}
+          <button
+            onClick={handleRefillHearts}
+            disabled={!canRefill}
+            className={`w-full py-4 rounded-2xl font-bold text-base flex items-center justify-between px-5 transition-opacity
+              ${canRefill
+                ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}
+          >
+            <span>❤️❤️❤️❤️❤️ Refill All</span>
+            <span className={`text-sm font-extrabold ${canRefill ? 'text-white/80' : 'text-gray-400'}`}>
+              {REFILL_COST} 💎
+              {gems < REFILL_COST && <span className="ml-1 text-xs">(need {REFILL_COST - gems} more)</span>}
+            </span>
+          </button>
+
+          {/* Go Home */}
+          <button
+            onClick={() => navigate('/')}
+            className="w-full py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            Go Home
+          </button>
         </div>
       </div>
     );

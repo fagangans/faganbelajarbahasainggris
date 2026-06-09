@@ -118,6 +118,20 @@ const useGameStore = create(
         return false;
       },
 
+      spendGems: (amount) => {
+        const { gems } = get();
+        if (gems >= amount) {
+          set({ gems: gems - amount });
+          return true;
+        }
+        return false;
+      },
+
+      refillAllHearts: () => {
+        const { maxHearts } = get();
+        set({ hearts: maxHearts });
+      },
+
       updateStreak: () => {
         const { lastActiveDate } = get();
         const today = new Date().toDateString();
