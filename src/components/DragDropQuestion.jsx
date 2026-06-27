@@ -72,13 +72,24 @@ export default function DragDropQuestion({ question, onAnswer, disabled }) {
 
   return (
     <div className="space-y-4">
-      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border-2 border-blue-100 dark:border-blue-800 min-h-[52px] flex flex-wrap gap-2 items-center">
-        <span className="text-xs text-blue-500 dark:text-blue-400 font-semibold uppercase tracking-wide w-full mb-1">
+      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border-2 border-blue-100 dark:border-blue-800 min-h-[52px]">
+        <span className="text-xs text-blue-500 dark:text-blue-400 font-semibold uppercase tracking-wide block mb-2">
           Your sentence:
         </span>
-        <span className="text-gray-700 dark:text-gray-200 font-bold text-sm leading-relaxed">
-          {currentSentence || <span className="text-gray-400 italic">Drag words to arrange...</span>}
-        </span>
+        <div className="flex flex-wrap gap-1.5 items-center">
+          {items.length > 0 ? (
+            items.map((item) => (
+              <span
+                key={item.id}
+                className="px-2.5 py-1 rounded-lg bg-white dark:bg-blue-800/40 border border-blue-200 dark:border-blue-700 text-gray-700 dark:text-gray-100 font-bold text-sm break-words"
+              >
+                {item.word}
+              </span>
+            ))
+          ) : (
+            <span className="text-gray-400 italic text-sm">Drag words to arrange...</span>
+          )}
+        </div>
       </div>
 
       <DndContext
