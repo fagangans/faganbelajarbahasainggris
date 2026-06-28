@@ -25,7 +25,7 @@ function SortableWord({ id, word, disabled }) {
       style={{ transform: CSS.Transform.toString(transform), transition }}
       {...attributes}
       {...listeners}
-      className={`px-3 py-2 rounded-xl font-bold text-sm cursor-grab active:cursor-grabbing select-none transition-all
+      className={`touch-none px-4 py-3 rounded-xl font-bold text-sm cursor-grab active:cursor-grabbing select-none transition-all
         ${isDragging
           ? 'opacity-30 bg-gray-200 dark:bg-gray-700'
           : 'bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-400 text-gray-800 dark:text-white'
